@@ -72,9 +72,10 @@ export default function Game({ peerId, seed }) {
 		addEventListener("input", handleEvent);
 		function handleEvent(event) {
 			// TODO: Add validation
-			if (event.detail.peerId === peerId) {
+			if (event.detail.peerId == peerId) {
 				processInput(event.detail.action);
 			}
+            console.log("Peer ID: " + peerId + " Action: " + event.detail.peerId);   
 		}
 		function processInput(input) {
 			switch (input) {
