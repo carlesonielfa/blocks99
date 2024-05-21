@@ -3,7 +3,24 @@
     import Peer from "peerjs";
     import { onDestroy } from "svelte";
 
-    const peer = new Peer();
+    // Generate the ID for the connection, once per load of the tab.
+    const UUID = window.crypto.randomUUID();
+    // Server connection information.
+    // Complete with the URI of your Cloud Run server.
+    const SERVER_URI = "blocks99-server-bivrmfu6ua-ew.a.run.app";
+    // Key will be exposed to front end, that's fine.
+    // This is the MD5 of the key from Terraform.
+    const SERVER_KEY = "fd73517959ca5765538f4d7d8dadefda";
+    const SERVER_CONNECTION = {
+        host: SERVER_URI,
+        port: 443,
+        ping: 1000 * 15, // 15s ping
+        secure: true,
+        debug: 2,
+        key: SERVER_KEY,
+    };
+
+    const peer = new Peer(UUID, SERVER_CONNECTION);
 
     let peerId;
     let connections = {};
@@ -87,7 +104,7 @@
         conn.on("open", () => {
             console.log("Connected to peer ", conn.peer);
             connections[conn.peer] = conn;
-            connections = { ...connections};
+            connections = { ...connections };
         });
         conn.on("data", (data) => {
             console.log("Received", data);
@@ -96,11 +113,11 @@
         conn.on("close", () => {
             console.log("Connection closed");
             delete connections[conn.peer];
-            connections = { ...connections};
+            connections = { ...connections };
         });
     }
     // HELPER FUNCTIONS
-	$: isConnected = () => Object.keys(connections).length > 0;
+    $: isConnected = () => Object.keys(connections).length > 0;
 
     // CLEANUP
     onDestroy(() => {
