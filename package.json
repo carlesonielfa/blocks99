@@ -19,5 +19,8 @@
   "dependencies": {
     "peer": "^1.0.2",
     "peerjs": "^1.5.4"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.17.2"
   }
 }
