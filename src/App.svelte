@@ -7,6 +7,8 @@
         PEER_SERVER_KEY,
         PEER_SERVER_URI,
     } from "./scripts/peer.js";
+    import config from "./configs/tetrominos.json";
+    import { colors } from "unique-names-generator";
 
     const peer = peerServerConnect();
 
@@ -138,29 +140,36 @@
 
 <main>
     <div class="mb-29">
-        <h1 class="mb-2 font-bold tracking-tight text-4xl">
-            Tetrominos Battle Royale
+        <h1
+            class="mb-2 font-bold tracking-tight text-5xl font-custom uppercase"
+        >
+            Blocks 99
         </h1>
+        {#if currentState !== GameStates.IN_GAME}
+            <p class="mb-1">A P2P Tetrominos Battle Royale!</p>
+        {/if}
+        <div class="flex flex-row justify-center items-center gap-1">
+            {#each config.colors as color}
+                <div class="w-10 h-1" style="background-color: {color};" />
+            {/each}
+        </div>
 
         {#key connections}
             {#if currentState === GameStates.CONNECTED}
-                <p>
+                <p class="p-4">
                     Your ID is:
-                    <br />
                     <strong>{peerId}</strong>
                 </p>
-                <PeerList
-                    SERVER_URI={PEER_SERVER_URI}
-                    SERVER_KEY={PEER_SERVER_KEY}
-                    {peerId}
-                    onClickPeer={(code) => handleClickConnect(code)}
-                />
+                <div class="my-6">
+                    <PeerList
+                        SERVER_URI={PEER_SERVER_URI}
+                        SERVER_KEY={PEER_SERVER_KEY}
+                        {peerId}
+                        onClickPeer={(code) => handleClickConnect(code)}
+                    />
+                </div>
             {:else if currentState === GameStates.DISCONNECTED}
                 <p>Connecting to server...</p>
-            {:else if currentState === GameStates.JOINED}
-                <Button on:click={() => handleClickDisconnect()}>
-                    Exit game
-                </Button>
             {/if}
         {/key}
     </div>
@@ -172,4 +181,10 @@
             {/each}
         </div>
     {/if}
+    {#if currentState === GameStates.IN_GAME}
+        <Button on:click={handleClickDisconnect}>Disconnect</Button>
+    {/if}
 </main>
+
+<style>
+</style>

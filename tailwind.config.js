@@ -2,7 +2,11 @@
 export default {
     plugins: [],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                custom: ["AudioWide", "sans-serif"],
+            },
+        },
     },
     content: ["./index.html", "./src/**/*.{svelte,js,ts}"], // for unused CSS
     variants: {
