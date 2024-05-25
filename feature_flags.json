@@ -1,0 +1,9 @@
+{
+    "TURN_servers_enabled": {
+        "description": "Enable TURN servers",
+        "values": {
+            "prod": false,
+            "dev": false
+        }
+    }
+}

@@ -1,13 +1,5 @@
-# Tetrominos Battle Royale
+# Feature flags for Blocks 99
 
-[![Deploy static content to Pages](https://github.com/carlesonielfa/blocks99/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/carlesonielfa/blocks99/actions/workflows/deploy.yml)
+Intended to be used with the Blocks 99 project.
 
-Short project to program a browser based peer-to-peer Tetris 99 clone
-
-## Project status
-
--   [x] Single player
--   [x] 2 player
--   [ ] 2 player with garbage
--   [ ] 99 player
--   [ ] Bots
+It is a simple way to enable or disable features in the Blocks 99 project.
