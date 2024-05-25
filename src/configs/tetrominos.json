@@ -11,9 +11,7 @@
     "colors": ["cyan", "blue", "orange", "yellow", "green", "purple", "red"],
     "blocks": {
         "I": {
-            "shape": [
-                [1, 1, 1, 1]
-            ]
+            "shape": [[1, 1, 1, 1]]
         },
         "J": {
             "shape": [

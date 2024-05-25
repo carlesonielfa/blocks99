@@ -1,36 +1,42 @@
 <script>
     import Game from "./lib/Game.svelte";
-    import Peer from "peerjs";
+    import Button from "./lib/Button.svelte";
+    import PeerList from "./lib/PeerList.svelte";
     import { onDestroy } from "svelte";
+    import peerServerConnect, {
+        PEER_SERVER_KEY,
+        PEER_SERVER_URI,
+    } from "./scripts/peer.js";
 
-    // Generate the ID for the connection, once per load of the tab.
-    const UUID = window.crypto.randomUUID();
-    // Server connection information.
-    // Complete with the URI of your Cloud Run server.
-    const SERVER_URI = "blocks99-server-bivrmfu6ua-ew.a.run.app";
-    // Key will be exposed to front end, that's fine.
-    // This is the MD5 of the key from Terraform.
-    const SERVER_KEY = "fd73517959ca5765538f4d7d8dadefda";
-    const SERVER_CONNECTION = {
-        host: SERVER_URI,
-        port: 443,
-        ping: 1000 * 15, // 15s ping
-        secure: true,
-        debug: 2,
-        key: SERVER_KEY,
-    };
-
-    const peer = new Peer(UUID, SERVER_CONNECTION);
+    const peer = peerServerConnect();
 
     let peerId;
     let connections = {};
-
+    const GameStates = Object.freeze({
+        DISCONNECTED: Symbol("disconnected"),
+        CONNECTED: Symbol("connected"),
+        JOINED: Symbol("joined"),
+        IN_GAME: Symbol("in_game"),
+    });
+    let currentState = GameStates.DISCONNECTED;
+    function updateState() {
+        if (connections && Object.keys(connections).length > 0) {
+            currentState = GameStates.IN_GAME;
+        } else if (peerId) {
+            currentState = GameStates.CONNECTED;
+        } else {
+            currentState = GameStates.DISCONNECTED;
+        }
+        console.log("Current state: ", currentState);
+    }
     peer.on("open", (id) => {
         console.log("My peer ID is: " + id);
         peerId = id;
+        updateState();
     });
     peer.on("connection", (conn) => {
         setupConnectionHandlers(conn);
+        updateState();
     });
     peer.on("error", (err) => {
         console.error(err);
@@ -86,8 +92,7 @@
     window.addEventListener("keydown", handleInput);
 
     // PEER CONNECTION
-    function handleClickConnect() {
-        let code = window.prompt("Enter peer ID");
+    function handleClickConnect(code) {
         if (code) {
             const conn = peer.connect(code);
             setupConnectionHandlers(conn);
@@ -105,6 +110,7 @@
             console.log("Connected to peer ", conn.peer);
             connections[conn.peer] = conn;
             connections = { ...connections };
+            updateState();
         });
         conn.on("data", (data) => {
             console.log("Received", data);
@@ -114,6 +120,7 @@
             console.log("Connection closed");
             delete connections[conn.peer];
             connections = { ...connections };
+            updateState();
         });
     }
     // HELPER FUNCTIONS
@@ -131,45 +138,38 @@
 
 <main>
     <div class="mb-29">
-        <h1 class="mb-2 font-bold tracking-tight sm:text-4xl">
+        <h1 class="mb-2 font-bold tracking-tight text-4xl">
             Tetrominos Battle Royale
         </h1>
 
         {#key connections}
-            {#if peerId}
+            {#if currentState === GameStates.CONNECTED}
                 <p>
                     Your ID is:
                     <br />
                     <strong>{peerId}</strong>
                 </p>
-                <button
-                    class="mt-2 rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                    on:click={() => handleClickConnect()}
-                >
-                    Connect
-                </button>
-            {:else if Object.keys(connections).length === 0}
-                <p>Connecting...</p>
-            {:else}
-                <button
-                    class="mt-2 rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                    on:click={() => handleClickDisconnect()}
-                >
-                    Disconnect
-                </button>
+                <PeerList
+                    SERVER_URI={PEER_SERVER_URI}
+                    SERVER_KEY={PEER_SERVER_KEY}
+                    {peerId}
+                    onClickPeer={(code) => handleClickConnect(code)}
+                />
+            {:else if currentState === GameStates.DISCONNECTED}
+                <p>Connecting to server...</p>
+            {:else if currentState === GameStates.JOINED}
+                <Button on:click={() => handleClickDisconnect()}>
+                    Exit game
+                </Button>
             {/if}
         {/key}
     </div>
-    <div class="mt-4 flex flex-row gap-4 items-center justify-center">
-        <Game {peerId} seed={43} {registerActionListener} />
-        {#each Object.keys(connections) as connId}
-            <Game peerId={connId} seed={43} {registerActionListener} />
-        {/each}
-    </div>
+    {#if currentState === GameStates.IN_GAME}
+        <div class="mt-4 flex flex-row gap-4 items-center justify-center">
+            <Game {peerId} seed={43} {registerActionListener} />
+            {#each Object.keys(connections) as connId}
+                <Game peerId={connId} seed={43} {registerActionListener} />
+            {/each}
+        </div>
+    {/if}
 </main>
-
-<style global lang="postcss">
-    @tailwind utilities;
-    @tailwind components;
-    @tailwind base;
-</style>
