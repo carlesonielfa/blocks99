@@ -32,7 +32,7 @@
         let dropTime = 1000;
 
         const board = Array.from({ length: BOARD_HEIGHT }, () =>
-            Array(BOARD_WIDTH).fill(0)
+            Array(BOARD_WIDTH).fill(0),
         );
 
         // draw function
@@ -50,7 +50,7 @@
                             x * BLOCK_SIZE + offset.x + BLOCK_BORDER,
                             y * BLOCK_SIZE + offset.y + BLOCK_BORDER,
                             BLOCK_SIZE - 2 * BLOCK_BORDER,
-                            BLOCK_SIZE - 2 * BLOCK_BORDER
+                            BLOCK_SIZE - 2 * BLOCK_BORDER,
                         );
                     }
                 }
@@ -113,7 +113,7 @@
         function checkCollision(
             xOffset = 0,
             yOffset = 0,
-            blocks = player.block
+            blocks = player.block,
         ) {
             return blocks.find((row, y) => {
                 return row.find((block, x) => {
@@ -195,9 +195,3 @@
         height={config.board.height * config.board.block_size}
     />
 </div>
-
-<style global lang="postcss">
-    @tailwind utilities;
-    @tailwind components;
-    @tailwind base;
-</style>
