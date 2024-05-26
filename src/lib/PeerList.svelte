@@ -23,25 +23,33 @@
 </script>
 
 <div class="flex flex-col items-center">
-    <h2 class="text-xl font-semibold">Connected Users</h2>
-    {#if peerList.length === 0}
-        <p class="text-sm">You are by yourself 🥲</p>
-    {:else}
-        <ul
-            class="w-auto text-sm font-medium border border-black rounded-lg dark:border-white"
+    <h2 class="text-xl font-semibold mb-2">Connected Users</h2>
+    <ul
+        class="w-auto text-sm font-medium border border-black rounded-md dark:border-white"
+    >
+        {#if peerList.length === 0}
+            <li class="p-2">You are by yourself 🥲</li>
+        {/if}
+        {#each peerList as peer, index}
+            <li
+                class="p-2 border-white dark:border-white
+          hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black {index ===
+                0
+                    ? 'rounded-t-md'
+                    : ''} select-none cursor-pointer"
+                on:click={() => onClickPeer(peer)}
+            >
+                {peer}
+            </li>
+        {/each}
+        <li
+            class="p-2 font-semibold upp
+                dark:bg-white bg-black text-white dark:text-black
+                hover:bg-gray-700 dark:hover:bg-gray-300
+                rounded-b-md select-none cursor-pointer"
+            on:click={fetchPeers}
         >
-            {#each peerList as peer, index}
-                <li
-                    class="p-2 border-white dark:border-white
-          hover:bg-black dark:hover:bg-white hover:text-white dark:hover:text-black
-          {index === peerList.length - 1 ? 'rounded-b-lg' : ''}
-          {index === 0 ? 'rounded-t-lg' : ''}"
-                    on:click={() => onClickPeer(peer)}
-                >
-                    {peer}
-                </li>
-            {/each}
-        </ul>
-    {/if}
-    <Button on:click={fetchPeers}>Refresh</Button>
+            Refresh
+        </li>
+    </ul>
 </div>

@@ -7,6 +7,7 @@
         PEER_SERVER_KEY,
         PEER_SERVER_URI,
     } from "./scripts/peer.js";
+    import config from "./configs/tetrominos.json";
 
     const peer = peerServerConnect();
 
@@ -123,8 +124,6 @@
             updateState();
         });
     }
-    // HELPER FUNCTIONS
-    $: isConnected = () => Object.keys(connections).length > 0;
 
     // CLEANUP
     onDestroy(() => {
@@ -138,38 +137,65 @@
 
 <main>
     <div class="mb-29">
-        <h1 class="mb-2 font-bold tracking-tight text-4xl">
-            Tetrominos Battle Royale
+        <h1
+            class="mb-2 font-bold tracking-tight text-5xl font-custom uppercase"
+        >
+            Blocks 99
         </h1>
+        <p
+            class="mb-1 {currentState === GameStates.IN_GAME
+                ? 'animate-fade-out'
+                : 'opacity-0 animate-fade-in animation-delay-300'}"
+        >
+            A P2P Tetrominos Battle Royale!
+        </p>
+        <div
+            class="flex flex-row justify-center items-center gap-1 {currentState ===
+            GameStates.IN_GAME
+                ? 'animate-fade-out animation-delay-300'
+                : 'animate-fade-in'}"
+        >
+            {#each config.colors as color}
+                <div class="w-10 h-1" style="background-color: {color};" />
+            {/each}
+        </div>
 
         {#key connections}
             {#if currentState === GameStates.CONNECTED}
-                <p>
+                <p class="p-4">
                     Your ID is:
-                    <br />
                     <strong>{peerId}</strong>
                 </p>
-                <PeerList
-                    SERVER_URI={PEER_SERVER_URI}
-                    SERVER_KEY={PEER_SERVER_KEY}
-                    {peerId}
-                    onClickPeer={(code) => handleClickConnect(code)}
-                />
+                <div class="my-6">
+                    <PeerList
+                        SERVER_URI={PEER_SERVER_URI}
+                        SERVER_KEY={PEER_SERVER_KEY}
+                        {peerId}
+                        onClickPeer={(code) => handleClickConnect(code)}
+                    />
+                </div>
             {:else if currentState === GameStates.DISCONNECTED}
-                <p>Connecting to server...</p>
-            {:else if currentState === GameStates.JOINED}
-                <Button on:click={() => handleClickDisconnect()}>
-                    Exit game
-                </Button>
+                <p class="p-4">Connecting to server...</p>
             {/if}
         {/key}
     </div>
     {#if currentState === GameStates.IN_GAME}
-        <div class="mt-4 flex flex-row gap-4 items-center justify-center">
+        <div
+            class="mt-4 flex flex-row gap-4 items-center justify-center {currentState ===
+            GameStates.IN_GAME
+                ? 'animate-fade-in'
+                : ''}"
+        >
             <Game {peerId} seed={43} {registerActionListener} />
             {#each Object.keys(connections) as connId}
                 <Game peerId={connId} seed={43} {registerActionListener} />
             {/each}
         </div>
     {/if}
+    {#if currentState === GameStates.IN_GAME}
+        <Button on:click={handleClickDisconnect}>Disconnect</Button>
+    {/if}
 </main>
+
+<style>
+</style>

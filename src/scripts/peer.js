@@ -1,4 +1,5 @@
 import Peer from "peerjs";
+import hasFlag from "../utils/flags";
 import {
     uniqueNamesGenerator,
     adjectives,
@@ -9,10 +10,12 @@ import {
 // TURN server configuration.
 const TURN_USERNAME = import.meta.env.VITE_TURN_SERVER_USERNAME;
 const TURN_CREDENTIAL = import.meta.env.VITE_TURN_SERVER_CREDENTIAL;
-const TURN_CONFIG = [
+const STUN_CONFIG = [
     {
         urls: "stun:stun.relay.metered.ca:80",
     },
+];
+const TURN_CONFIG = [
     {
         urls: "turn:global.relay.metered.ca:80",
         username: TURN_USERNAME,
@@ -47,7 +50,9 @@ const SERVER_CONNECTION = {
     debug: 2,
     key: PEER_SERVER_KEY,
     config: {
-        iceServers: TURN_CONFIG,
+        iceServers: hasFlag("TURN_servers_enabled")
+            ? [...STUN_CONFIG, ...TURN_CONFIG]
+            : STUN_CONFIG,
     },
 };
 
