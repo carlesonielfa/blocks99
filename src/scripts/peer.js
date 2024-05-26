@@ -42,23 +42,22 @@ const TURN_CONFIG = [
 export const PEER_SERVER_URI = import.meta.env.VITE_PEER_SERVER_URI;
 export const PEER_SERVER_KEY = import.meta.env.VITE_PEER_SERVER_KEY;
 
-const SERVER_CONNECTION = {
-    host: PEER_SERVER_URI,
-    port: 443,
-    ping: 1000 * 15, // 15s ping
-    secure: true,
-    debug: 2,
-    key: PEER_SERVER_KEY,
-    config: {
-        iceServers: hasFlag("TURN_servers_enabled")
-            ? [...STUN_CONFIG, ...TURN_CONFIG]
-            : STUN_CONFIG,
-    },
-};
-
-export default function peerServerConnect() {
+export default async function peerServerConnect() {
     const UUID = uniqueNamesGenerator({
         dictionaries: [adjectives, colors, animals],
     }); // big_red_donkey
+    const SERVER_CONNECTION = {
+        host: PEER_SERVER_URI,
+        port: 443,
+        ping: 1000 * 15, // 15s ping
+        secure: true,
+        debug: 2,
+        key: PEER_SERVER_KEY,
+        config: {
+            iceServers: (await hasFlag("TURN_servers_enabled"))
+                ? [...STUN_CONFIG, ...TURN_CONFIG]
+                : STUN_CONFIG,
+        },
+    };
     return new Peer(UUID, SERVER_CONNECTION);
 }

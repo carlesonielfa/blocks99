@@ -14,8 +14,7 @@ async function loadFlags() {
         return null;
     }
 }
-
-let flags = await loadFlags();
+let flags;
 
 export default async function hasFlag(flag) {
     if (!flags_loaded) {

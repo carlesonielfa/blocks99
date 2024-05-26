@@ -9,7 +9,22 @@
     } from "./scripts/peer.js";
     import config from "./configs/tetrominos.json";
 
-    const peer = peerServerConnect();
+    let peer;
+    peerServerConnect().then((p) => {
+        peer = p;
+        peer.on("open", (id) => {
+            console.log("My peer ID is: " + id);
+            peerId = id;
+            updateState();
+        });
+        peer.on("connection", (conn) => {
+            setupConnectionHandlers(conn);
+            updateState();
+        });
+        peer.on("error", (err) => {
+            console.error(err);
+        });
+    });
 
     let peerId;
     let connections = {};
@@ -30,18 +45,6 @@
         }
         console.log("Current state: ", currentState);
     }
-    peer.on("open", (id) => {
-        console.log("My peer ID is: " + id);
-        peerId = id;
-        updateState();
-    });
-    peer.on("connection", (conn) => {
-        setupConnectionHandlers(conn);
-        updateState();
-    });
-    peer.on("error", (err) => {
-        console.error(err);
-    });
 
     // ACTION EVENTS
     const actionListeners = [];
