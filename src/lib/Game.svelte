@@ -21,9 +21,17 @@
     const random = rng(seed);
 
     let canvas;
+    let canvasBG;
+    let canvasContainer;
 
     onMount(() => {
+        canvasContainer.style.width = `${config.board.width * config.board.block_size}px`;
+        canvasContainer.style.height = `${config.board.height * config.board.block_size}px`;
+
         const ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = false;
+        const ctxBG = canvasBG.getContext("2d");
+        ctxBG.imageSmoothingEnabled = false;
 
         const counters = {
             drop: 0,
@@ -40,6 +48,7 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawBoard();
             drawPlayer();
+            ctx.imageSmoothingEnabled = false;
         }
         function drawBlocks(blocks, offset = { x: 0, y: 0 }) {
             for (let y = 0; y < blocks.length; y++) {
@@ -65,6 +74,31 @@
                 y: player.y * BLOCK_SIZE,
             });
         }
+        function drawBG() {
+            // Draw background grid
+            // This is only drawn once
+            ctxBG.lineWidth = 1;
+            ctxBG.strokeStyle = "rgb(20,20,20)";
+            for (
+                var x = 0;
+                x < config.board.width * config.board.block_size;
+                x += config.board.block_size
+            ) {
+                for (
+                    var y = 0;
+                    y < config.board.height * config.board.block_size;
+                    y += config.board.block_size
+                ) {
+                    ctxBG.strokeRect(
+                        x,
+                        y,
+                        config.board.block_size,
+                        config.board.block_size,
+                    );
+                }
+            }
+        }
+        drawBG();
         // update - game logic
         const player = {
             x: BOARD_WIDTH / 2 - 1,
@@ -188,10 +222,33 @@
 </script>
 
 <div>
-    <canvas
-        class="ring-1 ring-white mx-auto bg-black"
-        bind:this={canvas}
-        width={config.board.width * config.board.block_size}
-        height={config.board.height * config.board.block_size}
-    />
+    <div class="relative" bind:this={canvasContainer}>
+        <canvas
+            class="ring-1 ring-gray-700 mx-auto bg-black z-0"
+            bind:this={canvasBG}
+            width={config.board.width * config.board.block_size}
+            height={config.board.height * config.board.block_size}
+        />
+        <canvas
+            class="z-1"
+            bind:this={canvas}
+            width={config.board.width * config.board.block_size}
+            height={config.board.height * config.board.block_size}
+        />
+    </div>
+    <p>{peerId}</p>
 </div>
+
+<style>
+    canvas {
+        image-rendering: optimizeSpeed; /* Older versions of FF          */
+        image-rendering: -moz-crisp-edges; /* FF 6.0+                       */
+        image-rendering: -webkit-optimize-contrast; /* Safari                        */
+        image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */
+        image-rendering: pixelated; /* Awesome future-browsers       */
+        -ms-interpolation-mode: nearest-neighbor; /* IE                            */
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+</style>

@@ -8,7 +8,6 @@
         PEER_SERVER_URI,
     } from "./scripts/peer.js";
     import config from "./configs/tetrominos.json";
-    import { colors } from "unique-names-generator";
 
     const peer = peerServerConnect();
 
@@ -125,8 +124,6 @@
             updateState();
         });
     }
-    // HELPER FUNCTIONS
-    $: isConnected = () => Object.keys(connections).length > 0;
 
     // CLEANUP
     onDestroy(() => {
@@ -145,10 +142,19 @@
         >
             Blocks 99
         </h1>
-        {#if currentState !== GameStates.IN_GAME}
-            <p class="mb-1">A P2P Tetrominos Battle Royale!</p>
-        {/if}
-        <div class="flex flex-row justify-center items-center gap-1">
+        <p
+            class="mb-1 {currentState === GameStates.IN_GAME
+                ? 'animate-fade-out'
+                : 'opacity-0 animate-fade-in animation-delay-300'}"
+        >
+            A P2P Tetrominos Battle Royale!
+        </p>
+        <div
+            class="flex flex-row justify-center items-center gap-1 {currentState ===
+            GameStates.IN_GAME
+                ? 'animate-fade-out animation-delay-300'
+                : 'animate-fade-in'}"
+        >
             {#each config.colors as color}
                 <div class="w-10 h-1" style="background-color: {color};" />
             {/each}
@@ -169,12 +175,17 @@
                     />
                 </div>
             {:else if currentState === GameStates.DISCONNECTED}
-                <p>Connecting to server...</p>
+                <p class="p-4">Connecting to server...</p>
             {/if}
         {/key}
     </div>
     {#if currentState === GameStates.IN_GAME}
-        <div class="mt-4 flex flex-row gap-4 items-center justify-center">
+        <div
+            class="mt-4 flex flex-row gap-4 items-center justify-center {currentState ===
+            GameStates.IN_GAME
+                ? 'animate-fade-in'
+                : ''}"
+        >
             <Game {peerId} seed={43} {registerActionListener} />
             {#each Object.keys(connections) as connId}
                 <Game peerId={connId} seed={43} {registerActionListener} />

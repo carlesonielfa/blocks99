@@ -41,6 +41,12 @@ jobs:
             - name: Install dependencies
               run: pnpm install
             - name: Build
+              env:
+                  VITE_ENVIRONMENT: prod
+                  VITE_PEER_SERVER_KEY: ${{ secrets.PEER_SERVER_KEY }}
+                  VITE_PEER_SERVER_URI: ${{ secrets.PEER_SERVER_URI }}
+                  VITE_TURN_SERVER_CREDENTIAL: ${{ secrets.TURN_SERVER_CREDENTIAL }}
+                  VITE_TURN_SERVER_USERNAME: ${{ secrets.TURN_SERVER_USERNAME }}
               run: pnpm run build
             - name: Setup Pages
               uses: actions/configure-pages@v4
