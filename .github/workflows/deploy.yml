@@ -50,8 +50,6 @@ jobs:
               run: pnpm run build
             - name: Setup Pages
               uses: actions/configure-pages@v4
-            - name: Create CNAME
-              run: echo "blocks99.onielfa.com" > ./dist/CNAME
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
