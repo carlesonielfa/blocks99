@@ -10,5 +10,4 @@ export default defineConfig({
     css: {
         postcss,
     },
-    base: "/blocks99/",
 });
