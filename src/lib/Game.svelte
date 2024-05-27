@@ -10,7 +10,8 @@
     import { rng } from "../utils/rng";
     import config from "../configs/tetrominos.json";
     import { onMount } from "svelte";
-
+    import anime from "animejs";
+    import { animateParticles } from "../scripts/particles";
     export let peerId;
     export let seed;
     export let registerActionListener;
@@ -22,6 +23,7 @@
 
     let canvas;
     let canvasBG;
+    let canvasFX;
     let canvasContainer;
 
     onMount(() => {
@@ -30,8 +32,20 @@
 
         const ctx = canvas.getContext("2d");
         ctx.imageSmoothingEnabled = false;
+
         const ctxBG = canvasBG.getContext("2d");
         ctxBG.imageSmoothingEnabled = false;
+
+        const ctxFX = canvasFX.getContext("2d");
+        ctxFX.imageSmoothingEnabled = false;
+
+        // FX
+        var renderFX = anime({
+            duration: Infinity,
+            update: function () {
+                ctxFX.clearRect(0, 0, canvasFX.width, canvasFX.height);
+            },
+        });
 
         const counters = {
             drop: 0,
@@ -133,6 +147,17 @@
                         player.y++;
                     }
                     player.y--;
+                    // Debug particle
+
+                    renderFX.play();
+                    animateParticles(
+                        ctxFX,
+                        (player.x + 1) * BLOCK_SIZE +
+                            BOARD_WIDTH * BLOCK_SIZE * 0.5,
+                        player.y * BLOCK_SIZE + BOARD_HEIGHT * BLOCK_SIZE * 0.5,
+                        10,
+                        config.colors[Math.max(...player.block.flat()) - 1],
+                    );
                     solidify();
                     break;
             }
@@ -221,22 +246,33 @@
     });
 </script>
 
-<div>
+<div class="flex flex-col items-center justify-center">
     <div class="relative" bind:this={canvasContainer}>
         <canvas
-            class="ring-1 ring-gray-700 mx-auto bg-black z-0"
+            class="ring-1 ring-gray-700 mx-auto bg-black z-0 top-0 left-0"
             bind:this={canvasBG}
             width={config.board.width * config.board.block_size}
             height={config.board.height * config.board.block_size}
         />
         <canvas
-            class="z-1"
+            class="z-1 top-0 left-0"
             bind:this={canvas}
             width={config.board.width * config.board.block_size}
             height={config.board.height * config.board.block_size}
         />
+        <canvas
+            class="z-2 pointer-events-none"
+            style="top: -{0.5 *
+                config.board.height *
+                config.board.block_size}px; left: -{0.5 *
+                config.board.width *
+                config.board.block_size}px;"
+            bind:this={canvasFX}
+            width={2 * config.board.width * config.board.block_size}
+            height={2 * config.board.height * config.board.block_size}
+        />
     </div>
-    <p>{peerId}</p>
+    <p class="text-center">{peerId}</p>
 </div>
 
 <style>
@@ -248,7 +284,5 @@
         image-rendering: pixelated; /* Awesome future-browsers       */
         -ms-interpolation-mode: nearest-neighbor; /* IE                            */
         position: absolute;
-        top: 0;
-        left: 0;
     }
 </style>

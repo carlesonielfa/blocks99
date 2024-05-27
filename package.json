@@ -22,6 +22,7 @@
         "vite": "^5.2.11"
     },
     "dependencies": {
+        "animejs": "^3.2.2",
         "dotenv": "^16.4.5",
         "peer": "^1.0.2",
         "peerjs": "^1.5.4",
