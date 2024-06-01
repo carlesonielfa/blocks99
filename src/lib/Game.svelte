@@ -9,9 +9,12 @@
 <script>
     import { rng } from "../utils/rng";
     import config from "../configs/tetrominos.json";
-    import { onMount } from "svelte";
+    import { beforeUpdate, onMount } from "svelte";
     import anime from "animejs";
-    import { animateParticles } from "../scripts/particles";
+    import {
+        animateFallParticles,
+        animateLineClearParticles,
+    } from "../scripts/particles";
     export let peerId;
     export let seed;
     export let registerActionListener;
@@ -49,9 +52,13 @@
 
         const counters = {
             drop: 0,
+            total: 0,
         };
         let gameOver = false;
         let dropTime = 1000;
+        let lineClearTime = 300;
+        // Store lines to clear and when to clear them (animation)
+        let linesToClear = [];
 
         const board = Array.from({ length: BOARD_HEIGHT }, () =>
             Array(BOARD_WIDTH).fill(0),
@@ -147,10 +154,9 @@
                         player.y++;
                     }
                     player.y--;
-                    // Debug particle
 
                     renderFX.play();
-                    animateParticles(
+                    animateFallParticles(
                         ctxFX,
                         (player.x + 1) * BLOCK_SIZE +
                             BOARD_WIDTH * BLOCK_SIZE * 0.5,
@@ -194,7 +200,7 @@
                 });
             });
             resetPlayer();
-            clearLines();
+            setLinesToClear();
             // If player is out of bounds, game over
             if (checkCollision()) {
                 console.log("Game Over");
@@ -209,13 +215,46 @@
                 Math.floor(random() * Object.values(config.blocks).length)
             ].shape;
         }
-        function clearLines() {
+        function setLinesToClear() {
+            const t = counters["total"];
+            // Find lines to clear
             for (let y = 0; y < BOARD_HEIGHT; y++) {
                 if (board[y].every((block) => block != 0)) {
-                    board.splice(y, 1);
-                    board.unshift(Array(BOARD_WIDTH).fill(0));
+                    linesToClear.push([t + lineClearTime, y]);
+                    // Set the line to clear to 0
+                    board[y] = Array(BOARD_WIDTH).fill(0);
+                    renderFX.play();
+                    animateLineClearParticles(
+                        ctxFX,
+                        (BOARD_WIDTH / 2) * BLOCK_SIZE +
+                            BOARD_WIDTH * BLOCK_SIZE * 0.5,
+                        y * BLOCK_SIZE + BOARD_HEIGHT * BLOCK_SIZE * 0.5,
+                        10,
+                        "white",
+                    );
                 }
             }
+        }
+        function clearLines() {
+            const t = counters["total"];
+            // Clear lines that are ready
+            let linesCleared = 0;
+            for (let i = 0; i < linesToClear.length; i++) {
+                const timeToClear = linesToClear[i][0];
+                const y = linesToClear[i][1];
+                if (t >= timeToClear) {
+                    board.splice(y, 1);
+                    board.unshift(Array(BOARD_WIDTH).fill(0));
+                    linesToClear.splice(i, 1);
+                    i--;
+                } else {
+                    break;
+                }
+            }
+            // For each line cleared, we have to move the rest of the stored lines to clear down
+            linesToClear.forEach((line) => {
+                line[1] -= linesCleared;
+            });
         }
         function update() {
             if (counters["drop"] > dropTime) {
@@ -226,6 +265,7 @@
                 }
                 counters["drop"] = 0;
             }
+            clearLines();
         }
         // game loop
         const frame = (time) => {
